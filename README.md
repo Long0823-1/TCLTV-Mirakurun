@@ -9,10 +9,10 @@ root化・Magisk導入は事前に必要です。本アプリはboot・vbmeta・
 
 ## ダウンロード・導入
 
-[ReleasesからTCLTV-Mirakurun.apkをダウンロード](https://github.com/Long0823-1/TCLTV-Mirakurun/releases/latest)
+[ReleasesからAPKをダウンロード](https://github.com/Long0823-1/TCLTV-Mirakurun/releases)
 
 1. 対応TVをLANへ接続し、TV本体の地デジチャンネルスキャンを完了します。
-2. APKをTVへインストールします。ADBの場合は `adb install -r TCLTV-Mirakurun.apk`。
+2. APKをTVへインストールします。ADBの場合は `adb install -r TCLTV-Mirakurun-v0.1.0.apk`。
 3. TVのアプリ一覧から **TCL TV Mirakurun** を開き、**1. セットアップ / 局一覧を更新** を選択します。
 4. Magiskのroot要求を許可します。実行環境を展開するので数分待ちます。
 5. チューナー配信を初めて導入した場合は、TVを再起動します。
