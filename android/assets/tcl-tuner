@@ -1,0 +1,36 @@
+#!/usr/bin/python3
+"""Bridge Mirakurun tuner stdout to the existing TCL TS service."""
+import os, re, signal, socket, sys, fcntl
+
+def main():
+    tuner = int(sys.argv[1])
+    if tuner not in (0, 1) or not re.fullmatch(r'\d+_\d+_\d+', sys.argv[2]):
+        raise ValueError('invalid tuner/channel')
+    onid, tsid, sid = map(int, sys.argv[2].split('_'))
+    lock = open('/var/run/tcl-tuner-%d.lock' % tuner, 'w')
+    fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    token = open('/run/tcl/tsd_token').read().strip()
+    with socket.create_connection(('127.0.0.1', 40557), 10) as ctl:
+        ctl.settimeout(20)
+        ctl.sendall(('AUTH %s TUNE %d %d %d %d\n' % (token,tuner,onid,tsid,sid)).encode())
+        reply = ctl.recv(4096).decode().strip()
+        if not reply.startswith('OK '):
+            raise RuntimeError(reply)
+    with socket.create_connection(('127.0.0.1', 40556 if tuner == 0 else 40558), 10) as stream:
+        stream.settimeout(30)
+        while True:
+            data = stream.recv(65536)
+            if not data:
+                break
+            sys.stdout.buffer.write(data)
+            sys.stdout.buffer.flush()
+
+if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, lambda *_: sys.exit(0))
+    try:
+        main()
+    except BrokenPipeError:
+        pass
+    except Exception as exc:
+        print('tcl-tuner: %s' % exc, file=sys.stderr)
+        sys.exit(1)

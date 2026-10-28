@@ -1,0 +1,10 @@
+logLevel: 2
+path: /var/run/mirakurun.sock
+port: 40772
+allowIPv4CidrRanges:
+  - 127.0.0.0/8
+  - 169.254.0.0/16
+  - 10.0.0.0/8
+  - 172.16.0.0/12
+  - 192.168.0.0/16
+epgRetrievalTime: 60000

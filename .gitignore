@@ -1,0 +1,11 @@
+.local/
+android/build/
+android/assets/runtime.tar.gz
+android/assets/libtsd.so
+android/assets/tsctl
+vendor/tcl/native/build/
+vendor/tcl/android/
+*.ts
+*.jks
+*.pass
+work/
