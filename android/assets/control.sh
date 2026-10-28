@@ -12,6 +12,8 @@ valid_pid() {
 }
 case "${1:-status}" in
  start)
+  touch "$BASE/enabled"
+  nohup /system/bin/sh "$BASE/network-watch.sh" </dev/null >>"$BASE/network.log" 2>&1 &
   valid_pid && { echo 'Mirakurun already running'; exit 0; }
   /data/local/tmp/tsctl --status >/dev/null 2>&1 || { echo 'チューナー配信が未起動です。初回導入後はTVを再起動してください'; exit 1; }
   [ -f "$R/opt/mirakurun/node_modules/mirakurun/lib/server.js" ] || { echo '先にセットアップしてください'; exit 1; }
@@ -27,6 +29,11 @@ case "${1:-status}" in
   echo 'Mirakurunを起動しました（初回は局情報の取得に数分かかります）'
   ;;
  stop)
+  network=$(cat "$BASE/network.pid" 2>/dev/null || true)
+  case "$network" in
+   ''|*[!0-9]*) ;;
+   *) if grep -q "$BASE/network-watch.sh" "/proc/$network/cmdline" 2>/dev/null; then kill "$network" 2>/dev/null || true; fi;;
+  esac
   if valid_pid; then kill "$p"; fi
   # The bridge is always started from this chroot. Terminate only its children.
   for proc in /proc/[0-9]*; do

@@ -12,6 +12,7 @@ import java.util.concurrent.*;
 public final class MainActivity extends Activity {
     private final ExecutorService worker=Executors.newSingleThreadExecutor();
     private TextView output;
+    private volatile boolean rebootScheduled;
     private final List<Button> buttons=new ArrayList<>();
     interface Operation { String run() throws Exception; }
 
@@ -20,12 +21,18 @@ public final class MainActivity extends Activity {
         ScrollView scroll=new ScrollView(this);
         LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL); body.setPadding(48,24,48,24);
         scroll.addView(body); setContentView(scroll);
-        TextView title=new TextView(this); title.setText("TCL TV Mirakurun 0.1.1"); title.setTextSize(28); body.addView(title);
+        TextView title=new TextView(this); title.setText("TCL TV Mirakurun 0.1.3"); title.setTextSize(28); body.addView(title);
         TextView description=new TextView(this); description.setText("対応TCL G06・Android 11・Magisk向け\n地デジ2チューナー / Mirakurun 4.1.5 / ポート40772\n初回はMagiskでrootを許可してください。導入中は電源を切らないでください。"); description.setTextSize(17); body.addView(description);
         TextView addresses=new TextView(this); addresses.setText(urls()); addresses.setTextSize(20); addresses.setTextColor(Color.rgb(100,210,255)); body.addView(addresses);
-        add(body,"1. セットアップ / 局一覧を更新",()-> {
+        add(body,"1. セットアップ / 局更新（完了後に自動再起動）",()-> {
             String result=Installer.configure(this);
-            return result+"\n次に「2. 起動」を選んでください。初回のチューナー導入後はTVの再起動が必要です。";
+            TclPolicy.configure(this,true);
+            getSharedPreferences(NetworkService.PREFS,0).edit().putBoolean("enabled",true).commit();
+            startForegroundService(new Intent(this,NetworkService.class));
+            Root.capture("touch "+Installer.BASE+"/enabled");
+            Root.capture("nohup /system/bin/sh -c '/system/bin/sleep 5; /system/bin/sync; /system/bin/reboot' </dev/null >/dev/null 2>&1 &");
+            rebootScheduled=true;
+            return result+"\n5秒後にTVを自動再起動します。再起動後はMirakurunを自動起動します。";
         });
         add(body,"2. 起動・自動起動を有効化",()-> {
             String result=Installer.command("start");
@@ -58,7 +65,7 @@ public final class MainActivity extends Activity {
                 TclPolicy.configure(this,false);
                 return Installer.remove(this);
             })).show());
-        output=new TextView(this); output.setTextSize(16); output.setText("セットアップ → 起動 の順に操作してください。\n既存のBonDriver・IPTVとの同じチューナーの同時利用は避けてください。"); body.addView(output);
+        output=new TextView(this); output.setTextSize(16); output.setText("セットアップ完了後はTVを自動再起動し、Mirakurunを起動します。\n既存のBonDriver・IPTVとの同じチューナーの同時利用は避けてください。"); body.addView(output);
         buttons.get(0).requestFocus();
     }
 
@@ -74,7 +81,7 @@ public final class MainActivity extends Activity {
                 String text;
                 try { text=op.run(); } catch(Exception e) { text="処理に失敗しました\n"+e.getMessage(); }
                 final String result=text;
-                runOnUiThread(()-> { if(isFinishing())return; output.setText(result); for(Button item:buttons)item.setEnabled(true); selected.requestFocus(); });
+                runOnUiThread(()-> { if(isFinishing())return; output.setText(result); for(Button item:buttons)item.setEnabled(!rebootScheduled); if(!rebootScheduled)selected.requestFocus(); });
             });
     }
 

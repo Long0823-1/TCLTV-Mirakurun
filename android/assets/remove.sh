@@ -25,7 +25,7 @@ for point in "$R/run/tcl/tsd_token" "$R/proc" "$R/dev"; do
   umount "$point"
  done
 done
-if awk -v prefix="$BASE/" 'index($2,prefix)==1 {found=1} END {exit !found}' /proc/mounts; then
+if awk -v prefix="$BASE" '$2==prefix || index($2,prefix "/")==1 {found=1} END {exit !found}' /proc/mounts; then
  echo '未解除のマウントがあります。削除を中止しました'; exit 22
 fi
 owned=0

@@ -9,3 +9,4 @@ vendor/tcl/android/
 *.jks
 *.pass
 work/
+tests/.work/

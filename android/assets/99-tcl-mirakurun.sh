@@ -1,5 +1,7 @@
 #!/system/bin/sh
 BASE=/data/local/tcl-mirakurun
+[ -f "$BASE/enabled" ] || exit 0
+nohup /system/bin/sh "$BASE/network-watch.sh" </dev/null >>"$BASE/network.log" 2>&1 &
 for attempt in $(seq 1 120); do
  [ -f "$BASE/enabled" ] || exit 0
  if [ "$(getprop sys.boot_completed)" = 1 ] && /data/local/tmp/tsctl --status 2>/dev/null | grep -q ' running=1 '; then

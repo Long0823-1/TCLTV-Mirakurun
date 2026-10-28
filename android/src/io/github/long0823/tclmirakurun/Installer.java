@@ -15,7 +15,7 @@ final class Installer {
     static String configure(Context context) throws Exception {
         File stage = new File(context.getFilesDir(), "setup");
         if (!stage.isDirectory() && !stage.mkdirs()) throw new IOException("staging failed");
-        for (String name : new String[]{"runtime.tar.gz", "runtime.sha256", "patch-runtime.cjs", "setup.sh", "control.sh", "install.sh", "restore.sh", "90-tsd-inject.sh", "91-tcl-pvr.sh", "99-tcl-mirakurun.sh", "tcl-pvr-net.sh", "libtsd.so", "tsctl", "tcl-tuner", "server.yml", "tuners.yml"}) {
+        for (String name : new String[]{"runtime.tar.gz", "runtime.sha256", "patch-runtime.cjs", "setup.sh", "control.sh", "network-watch.sh", "install.sh", "restore.sh", "90-tsd-inject.sh", "91-tcl-pvr.sh", "99-tcl-mirakurun.sh", "tcl-pvr-net.sh", "libtsd.so", "tsctl", "tcl-tuner", "server.yml", "tuners.yml"}) {
             try (InputStream input = context.getAssets().open(name);
                  OutputStream out = new FileOutputStream(new File(stage, name))) {
                 byte[] bytes = new byte[65536]; int count;
