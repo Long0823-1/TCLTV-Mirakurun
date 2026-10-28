@@ -12,7 +12,7 @@ root化・Magisk導入は事前に必要です。本アプリはboot・vbmeta・
 [ReleasesからAPKをダウンロード](https://github.com/Long0823-1/TCLTV-Mirakurun/releases)
 
 1. 対応TVをLANへ接続し、TV本体の地デジチャンネルスキャンを完了します。
-2. APKをTVへインストールします。ADBの場合は `adb install -r TCLTV-Mirakurun-v0.1.0.apk`。
+2. APKをTVへインストールします。ADBの場合は `adb install -r TCLTV-Mirakurun-v0.1.1.apk`。
 3. TVのアプリ一覧から **TCL TV Mirakurun** を開き、**1. セットアップ / 局一覧を更新** を選択します。
 4. Magiskのroot要求を許可します。実行環境を展開するので数分待ちます。
 5. チューナー配信を初めて導入した場合は、TVを再起動します。
@@ -44,6 +44,10 @@ BS・CS・4Kは本アプリの対象外です。
 - **停止**: Mirakurunを止め、自動起動・このアプリの通信維持を無効化します。
   このアプリが追加したTCL常駐許可と電源設定は停止時に復元します。
 - **状態 / ログ**: 起動状態、チューナー状態、ネットワーク情報、直近のサーバーログを表示します。
+- **環境を削除**: 確認画面の後、Mirakurun本体・設定・番組DB・ログ・自動起動を削除します。
+  マウントを解除し、使用中のプロセスや不正なパスがある場合は削除を中止します。
+  既存のBonDriver環境は保持します。このアプリが初めてチューナー配信を導入した場合は
+  導入前の設定を復元し、TVの再起動を案内します。APK自体は残るため再構築できます。
 
 実行環境: `/data/local/tcl-mirakurun/rootfs`。
 設定: 同ディレクトリ内の `/usr/local/etc/mirakurun/{server,tuners,channels}.yml`。
@@ -66,7 +70,7 @@ Magiskフック: `/data/adb/service.d/99-tcl-mirakurun.sh`。
 - 起動後にWi-Fi等のIPが付く場合にも接続できるようIPv4の待受け処理を調整しています。
   MirakurunのLAN内IP・Origin制限は維持しています。
 - APKのアンインストールだけではroot領域の実行環境・起動フックは削除されません。
-  先にアプリで停止してください。完全撤去は [運用手順](docs/OPERATIONS.md) を参照してください。
+  先に **環境を削除** を実行してください。詳細は [運用手順](docs/OPERATIONS.md) を参照してください。
 - 初回導入と既存環境への追加は分岐します。実機で確認した範囲は [検証記録](docs/VALIDATION.md) を参照してください。
 
 ## ビルド

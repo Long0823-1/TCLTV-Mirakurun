@@ -71,6 +71,22 @@ final class Installer {
         return Root.capture("sh " + BASE + "/control.sh " + action);
     }
 
+    static String remove(Context context) throws Exception {
+        File stage=new File(context.getFilesDir(),"setup");
+        if(!stage.isDirectory() && !stage.mkdirs()) throw new IOException("staging failed");
+        for(String name:new String[]{"remove.sh","restore.sh"}) {
+            try(InputStream input=context.getAssets().open(name); OutputStream out=new FileOutputStream(new File(stage,name))) {
+                byte[] bytes=new byte[4096];int count;
+                while((count=input.read(bytes))!=-1)out.write(bytes,0,count);
+            }
+        }
+        String result=Root.capture("sh "+Root.quote(new File(stage,"remove.sh").getAbsolutePath())+" "+Root.quote(stage.getAbsolutePath()));
+        File[] files=stage.listFiles();
+        if(files!=null)for(File file:files)if(file.isFile())file.delete();
+        stage.delete();
+        return result;
+    }
+
     static void waitReady() throws Exception {
         for (int attempt=0;attempt<30;attempt++) {
             HttpURLConnection connection=null;
