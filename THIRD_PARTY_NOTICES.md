@@ -12,6 +12,14 @@
 - Alpine Linux 3.22.7 ARMv7 runtime, Node.js 22, npm, Python 3 and npm
   dependencies retain their own licenses inside the bundled root filesystem
   (`/lib/apk/db/installed`, package metadata and `node_modules/**/LICENSE*`).
+- The runtime's [BusyBox](https://busybox.net/) `zcip` applet provides automatic
+  IPv4 link-local addressing and ARP conflict handling (GPL-2.0-only).
+  Source and Alpine packaging: [Alpine busybox](https://gitlab.alpinelinux.org/alpine/aports/-/tree/3.22-stable/main/busybox).
+- [JmDNS](https://github.com/jmdns/jmdns) 3.6.3: Apache-2.0.
+  License and NOTICE are in `android/assets/licenses/` and included in the APK.
+- [SLF4J](https://www.slf4j.org/) API and NOP 2.0.17: MIT.
+  License texts are in `android/assets/licenses/` and included in the APK.
+  Pinned downloads and SHA-256 digests are in `scripts/java-dependencies.json`.
 - `runtime/crc32-fallback.cjs` is a local MIT-licensed implementation of CRC-32
   and CRC-32C. It replaces the ARM glibc-only native entrypoint of
   `@node-rs/crc32` for ARMv7/musl. It is used by ARIB logo PNG generation.

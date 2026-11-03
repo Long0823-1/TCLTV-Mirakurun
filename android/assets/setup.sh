@@ -33,7 +33,9 @@ cp "$STAGE/tuners.yml" "$R/usr/local/etc/mirakurun/tuners.yml"
 cp "$STAGE/tcl-tuner" "$R/usr/local/bin/tcl-tuner"
 cp "$STAGE/control.sh" "$BASE/control.sh"
 cp "$STAGE/network-watch.sh" "$BASE/network-watch.sh"
-[ -f "$BASE/wired-address" ] || echo '169.254.95.200/16' >"$BASE/wired-address"
+mkdir -p "$R/run/tcl"
+cp "$STAGE/autoip-hook.sh" "$R/run/tcl/autoip-hook.sh"
+chmod 700 "$R/run/tcl/autoip-hook.sh"
 cp "$STAGE/99-tcl-mirakurun.sh" /data/adb/service.d/99-tcl-mirakurun.sh
 chmod 755 "$BASE/control.sh" /data/adb/service.d/99-tcl-mirakurun.sh
 if [ "$existing" = 1 ]; then
@@ -46,3 +48,5 @@ fi
 touch "$BASE/enabled"
 sync
 echo 'セットアップ完了'
+
+/system/bin/sh "$STAGE/migrate-legacy-network.sh"

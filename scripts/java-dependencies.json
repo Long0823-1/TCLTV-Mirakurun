@@ -1,0 +1,17 @@
+[
+  {
+    "name": "jmdns-3.6.3.jar",
+    "url": "https://repo.maven.apache.org/maven2/org/jmdns/jmdns/3.6.3/jmdns-3.6.3.jar",
+    "sha256": "6b6eb1623cb1d9e51467312ea62c567da005c2aa5a95347f566a11b8703c0ef1"
+  },
+  {
+    "name": "slf4j-api-2.0.17.jar",
+    "url": "https://repo.maven.apache.org/maven2/org/slf4j/slf4j-api/2.0.17/slf4j-api-2.0.17.jar",
+    "sha256": "7b751d952061954d5abfed7181c1f645d336091b679891591d63329c622eb832"
+  },
+  {
+    "name": "slf4j-nop-2.0.17.jar",
+    "url": "https://repo.maven.apache.org/maven2/org/slf4j/slf4j-nop/2.0.17/slf4j-nop-2.0.17.jar",
+    "sha256": "3716f83649ec66161a2edefd4f49df34d1dd1c51cdcf941996c6987260f0a829"
+  }
+]

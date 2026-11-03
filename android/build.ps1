@@ -29,9 +29,17 @@ if ($linkExit -ne 0) {
 }
 Invoke-Tool "$JdkRoot\bin\jar.exe" @('uf',"$build\base.apk",'-C',$PSScriptRoot,'assets')
 $javaSources=@(Get-ChildItem "$PSScriptRoot\src","$build\aapt2-generated" -Filter '*.java' -Recurse | ForEach-Object FullName)
-Invoke-Tool "$JdkRoot\bin\javac.exe" (@('-encoding','UTF-8','-source','8','-target','8','-classpath',$platform,'-d',"$build\classes")+$javaSources)
+Invoke-Tool 'python' @("$repository\scripts\fetch-java-dependencies.py")
+$javaDeps=@(Get-ChildItem "$local\java-deps" -Filter '*.jar' | ForEach-Object FullName)
+$classPath=(@($platform)+$javaDeps)-join ';'
+Invoke-Tool "$JdkRoot\bin\javac.exe" (@('-encoding','UTF-8','-source','8','-target','8','-classpath',$classPath,'-d',"$build\classes")+$javaSources)
 $classFiles=@(Get-ChildItem "$build\classes" -Filter '*.class' -Recurse | ForEach-Object FullName)
-Invoke-Tool "$buildTools\d8.bat" (@('--release','--min-api','26','--lib',$platform,'--output',"$build\dex")+$classFiles)
+$helperDex=Join-Path $build 'network-helper-dex'
+New-Item -ItemType Directory -Force -Path $helperDex | Out-Null
+Invoke-Tool "$buildTools\d8.bat" @('--release','--min-api','26','--lib',$platform,'--output',$helperDex,"$build\classes\io\github\long0823\tclmirakurun\RootNetworkMain.class","$build\classes\io\github\long0823\tclmirakurun\NetworkProfile.class")
+Invoke-Tool "$JdkRoot\bin\jar.exe" @('cf',"$PSScriptRoot\assets\network-helper.jar",'-C',$helperDex,'classes.dex')
+Invoke-Tool "$JdkRoot\bin\jar.exe" @('uf',"$build\base.apk",'-C',$PSScriptRoot,'assets')
+Invoke-Tool "$buildTools\d8.bat" (@('--release','--min-api','26','--lib',$platform,'--output',"$build\dex")+$classFiles+$javaDeps)
 Invoke-Tool "$JdkRoot\bin\jar.exe" @('uf',"$build\base.apk",'-C',"$build\dex",'classes.dex')
 & "$buildTools\zipalign.exe" -f 4 "$build\base.apk" "$build\aligned.apk"
 $alignExit=$LASTEXITCODE

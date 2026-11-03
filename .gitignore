@@ -3,6 +3,7 @@ android/build/
 android/assets/runtime.tar.gz
 android/assets/libtsd.so
 android/assets/tsctl
+android/assets/network-helper.jar
 vendor/tcl/native/build/
 vendor/tcl/android/
 *.ts
