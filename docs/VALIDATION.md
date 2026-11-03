@@ -84,3 +84,20 @@ Windows PCから有線LANとWi-Fiの各TVアドレスへ接続して確認しま
 - 送信元指定や一時 `/32` 経路なしで、直結IPと `.local` の画面・APIがHTTP 200。
 - Windowsサービスの再起動とTVのDHCP再取得後も同じIP。サービスの解除・再導入とPC有線のDHCP復元を確認。
 - PC全体の再起動、長期間のリース更新、スリープ復帰は未実施。
+
+## Android 14のWi-Fi .local接続（v0.2.1、2026-11-03）
+
+- IPアドレスなら開けるがAndroid 14のブラウザーで `.local` が `DNS_PROBE_FINISHED_NXDOMAIN` になる現象を確認。
+- Wi-Fi上のQU要求とマルチキャスト要求へは返答する一方、一時送信元ポートからの標準IN質問（QUビットなし）にはユニキャスト返答が届かないことを再現。
+- JmDNS 3.6.3のSocketListenerが、QUビットだけで返答先を選んでいたことを確認。
+  RFC 6762 section 6.7に従い、送信元ポートが5353以外の問い合わせは送信元IP・ポートへ返答する最小修正を適用。
+- 修正前に失敗したテストが修正後は成功。IN/QUとRDなし/ありの4条件で、取引ID・質問・応答IPの一致とキャッシュフラッシュビットが立たないことを確認。
+- 従来のマルチキャスト返答、有線/Wi-Fi両方のHTTP画面・API応答も確認。
+- 修正版をTVへ上書き導入後、利用者のAndroid 14スマホでWi-Fi用.localが開けたことを確認。
+- 上流JARのハッシュ固定は維持し、別JARのSocketListenerクラス1つだけを差し替える。追加のrootポーリングやDNSサーバー設定変更は不要。
+
+再現・回帰テスト（同じLANから読み取りのみ）：
+
+```sh
+python tests/test-mdns-legacy.py --source <PCのWi-Fi IPv4> --tv-ip <TVのWi-Fi IPv4> --host <TVのWi-Fi広告名.local>
+```

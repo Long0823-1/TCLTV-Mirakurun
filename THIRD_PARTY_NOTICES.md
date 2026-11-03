@@ -17,6 +17,10 @@
   Source and Alpine packaging: [Alpine busybox](https://gitlab.alpinelinux.org/alpine/aports/-/tree/3.22-stable/main/busybox).
 - [JmDNS](https://github.com/jmdns/jmdns) 3.6.3: Apache-2.0.
   License and NOTICE are in `android/assets/licenses/` and included in the APK.
+  `vendor/jmdns/SocketListener.java` preserves the upstream Apache-2.0 header
+  and adds RFC 6762 section 6.7 legacy-unicast routing for Android one-shot
+  queries. `scripts/patch-jmdns.py` replaces only that class in a separate JAR;
+  the pinned upstream download and all other classes are retained.
 - [SLF4J](https://www.slf4j.org/) API and NOP 2.0.17: MIT.
   License texts are in `android/assets/licenses/` and included in the APK.
   Pinned downloads and SHA-256 digests are in `scripts/java-dependencies.json`.

@@ -9,10 +9,10 @@ root化・Magisk導入は事前に必要です。本アプリはboot・vbmeta・
 
 ## ダウンロード・導入
 
-[v0.2.0（実験版）のAPK](https://github.com/Long0823-1/TCLTV-Mirakurun/releases/tag/v0.2.0)
+[v0.2.1（実験版）のAPK](https://github.com/Long0823-1/TCLTV-Mirakurun/releases/tag/v0.2.1)
 
 1. 対応TVをLANへ接続し、TV本体の地デジチャンネルスキャンを完了します。
-2. APKをTVへインストールします。ADBの場合は `adb install -r TCLTV-Mirakurun-v0.2.0.apk`。
+2. APKをTVへインストールします。ADBの場合は `adb install -r TCLTV-Mirakurun-v0.2.1.apk`。
 3. TVのアプリ一覧から **TCL TV Mirakurun** を開き、**1. セットアップ / 局一覧を更新** を選択します。
 4. Magiskのroot要求を許可します。実行環境を展開するので数分待ちます。
 5. 正常に構築できたら、5秒後にTVを自動再起動します。構築エラー時は再起動しません。
@@ -91,6 +91,8 @@ Magiskフック: `/data/adb/service.d/99-tcl-mirakurun.sh`。
 - 手動固定IPは詳細設定です。TVでの確定期限は60秒ですが、実書き込み・期限切れ復元の全条件は未検証です。通常は自動取得を使用してください。
 
 ![TVのネットワーク設定](docs/images/02-tv-network.png)
+
+AndroidのブラウザーでIPでは開けるのにWi-Fiの `.local` が `NXDOMAIN` になる場合は、v0.2.1以降へ更新してください。Androidのone-shot mDNS問い合わせへ、送信元の一時UDPポートへ返答するよう修正しています。通常のmDNS検出とQU応答も維持します。
 
 ## 注意・制限
 

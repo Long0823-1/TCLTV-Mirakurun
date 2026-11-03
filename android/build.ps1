@@ -30,7 +30,9 @@ if ($linkExit -ne 0) {
 Invoke-Tool "$JdkRoot\bin\jar.exe" @('uf',"$build\base.apk",'-C',$PSScriptRoot,'assets')
 $javaSources=@(Get-ChildItem "$PSScriptRoot\src","$build\aapt2-generated" -Filter '*.java' -Recurse | ForEach-Object FullName)
 Invoke-Tool 'python' @("$repository\scripts\fetch-java-dependencies.py")
+Invoke-Tool 'python' @("$repository\scripts\patch-jmdns.py",'--javac',"$JdkRoot\bin\javac.exe")
 $javaDeps=@(Get-ChildItem "$local\java-deps" -Filter '*.jar' | ForEach-Object FullName)
+$javaDeps=@($javaDeps | ForEach-Object { if ([System.IO.Path]::GetFileName($_) -eq 'jmdns-3.6.3.jar') { Join-Path $local 'java-deps-patched\jmdns-3.6.3.jar' } else { $_ } })
 $classPath=(@($platform)+$javaDeps)-join ';'
 Invoke-Tool "$JdkRoot\bin\javac.exe" (@('-encoding','UTF-8','-source','8','-target','8','-classpath',$classPath,'-d',"$build\classes")+$javaSources)
 $classFiles=@(Get-ChildItem "$build\classes" -Filter '*.class' -Recurse | ForEach-Object FullName)
