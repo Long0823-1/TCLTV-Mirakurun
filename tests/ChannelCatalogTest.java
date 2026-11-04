@@ -9,8 +9,8 @@ public class ChannelCatalogTest {
   check(list.size()==4);check(list.get(0).type.equals("GR"));check(list.get(1).type.equals("BS"));check(list.get(2).type.equals("CS"));check(list.get(3).type.equals("CS"));
   check(list.get(1).channel.equals("4_16400_101"));
   check(ChannelCatalog.parse(row(4,16400,101,"S")).size()==1);
-  List<ChannelCatalog.Channel> cable=ChannelCatalog.parse(row(4,16528,211,"C")+row(11,45280,100,"C"));
-  check(cable.size()==2);check(cable.get(0).type.equals("SKY"));check(cable.get(1).type.equals("SKY"));
+  List<ChannelCatalog.Channel> cable=ChannelCatalog.parse(row(65534,48,200,"C")+row(4,16528,211,"C")+row(6,24608,333,"C")+row(32738,32738,1040,"T"));
+  check(cable.size()==4);check(cable.get(0).type.equals("GR"));check(cable.get(1).type.equals("BS"));check(cable.get(2).type.equals("CS"));check(cable.get(3).type.equals("SKY"));
   for(String rows:new String[]{"No result found",row(4,0,101,"S"),row(4,16400,70000,"S"),row(4,16400,101,"S").replace("browsable=1","browsable=0"),row(4,16400,101,"S").replace("EN_TCL_DTV","EN_TCL_DATA")}){
    boolean failed=false;try{ChannelCatalog.parse(rows);}catch(java.io.IOException e){failed=true;}check(failed);
   }

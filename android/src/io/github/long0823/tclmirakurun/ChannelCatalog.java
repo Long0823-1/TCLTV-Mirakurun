@@ -17,7 +17,7 @@ final class ChannelCatalog {
    int[] ids=new int[3];
    for(int i=0;i<3;i++){try{ids[i]=Integer.parseInt(m.group(i+1));}catch(NumberFormatException e){throw new IOException("invalid channel IDs",e);}if(ids[i]<1||ids[i]>65535)throw new IOException("invalid channel IDs");}
    String type="GR";
-   if(m.group(4).equals("TYPE_ISDB_C")){type="SKY";} // CATVは地デジ・衛星とは別の種別SKYで登録する（受信できるのは両チューナーとも地デジ端子経由）
+   if(m.group(4).equals("TYPE_ISDB_C")){type=ids[0]==4?"BS":(ids[0]==6||ids[0]==7?"CS":"SKY");} // CATV経由のBS/CSはBS/CS、CATVの専門チャンネルはSKY
    else if(m.group(4).equals("TYPE_ISDB_S")){
     if(ids[0]==4)type="BS";else if(ids[0]==6||ids[0]==7)type="CS";else continue;
    }
@@ -26,6 +26,9 @@ final class ChannelCatalog {
    result.add(new Channel(name,type,ids[0]+"_"+ids[1]+"_"+ids[2]));
    if(result.size()>512)throw new IOException("too many channels");
   }
+  // TVTest (BonDriver_Mirakurun) creates one tuner space per run of the same type: keep each type together.
+  final List<String> order=Arrays.asList("GR","BS","CS","SKY");
+  Collections.sort(result,new Comparator<Channel>(){public int compare(Channel a,Channel b){return Integer.compare(order.indexOf(a.type),order.indexOf(b.type));}});
   if(result.isEmpty())throw new IOException("TV本体で先に地デジ・BS/CSのチャンネルスキャンを行ってください");
   return result;
  }
