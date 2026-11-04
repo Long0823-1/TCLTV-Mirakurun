@@ -11,7 +11,7 @@ def main():
     fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
     token = open('/run/tcl/tsd_token').read().strip()
     with socket.create_connection(('127.0.0.1', 40557), 10) as ctl:
-        ctl.settimeout(20)
+        ctl.settimeout(45)
         ctl.sendall(('AUTH %s TUNE %d %d %d %d\n' % (token,tuner,onid,tsid,sid)).encode())
         reply = ctl.recv(4096).decode().strip()
         if not reply.startswith('OK '):

@@ -24,8 +24,8 @@ public final class MainActivity extends Activity {
         ScrollView scroll=new ScrollView(this);
         LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL); body.setPadding(48,24,48,24);
         scroll.addView(body); setContentView(scroll);
-        TextView title=new TextView(this); title.setText("TCL TV Mirakurun 0.2.1"); title.setTextSize(28); body.addView(title);
-        TextView description=new TextView(this); description.setText("対応TCL G06・Android 11・Magisk向け\n地デジ2チューナー / Mirakurun 4.1.5 / ポート40772\n初回はMagiskでrootを許可してください。導入中は電源を切らないでください。"); description.setTextSize(17); body.addView(description);
+        TextView title=new TextView(this); title.setText("TCL TV Mirakurun 0.3.0-pre.1"); title.setTextSize(28); body.addView(title);
+        TextView description=new TextView(this); description.setText("対応TCL G06・Android 11・Magisk向け\n地デジ・BS/110度CS / 2チューナー / Mirakurun 4.1.5 / ポート40772\n衛星の実受信は未検証のプレリリースです。\n初回はMagiskでrootを許可してください。導入中は電源を切らないでください。"); description.setTextSize(17); body.addView(description);
         TextView addresses=new TextView(this);networkAddresses=addresses;addresses.setText(NetworkSettings.describe(this)); addresses.setTextSize(18); addresses.setTextColor(Color.rgb(100,210,255)); body.addView(addresses);
         Button network=new Button(this);network.setText("ネットワーク設定 / .local名・固定IP");buttons.add(network);body.addView(network);network.setOnClickListener(v->NetworkSettings.show(this));networkRefresh.postDelayed(refreshNetwork,5000);
         Button host=new Button(this);host.setText(".localの接続名だけ変更");buttons.add(host);body.addView(host);host.setOnClickListener(v->NetworkSettings.showName(this));

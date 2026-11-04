@@ -39,7 +39,20 @@ chmod 700 "$R/run/tcl/autoip-hook.sh"
 cp "$STAGE/99-tcl-mirakurun.sh" /data/adb/service.d/99-tcl-mirakurun.sh
 chmod 755 "$BASE/control.sh" /data/adb/service.d/99-tcl-mirakurun.sh
 if [ "$existing" = 1 ]; then
- echo '既存のチューナー配信環境を保持して利用します'
+ mkdir -p "$BASE/shared-tuner-backup"
+ chmod 700 "$BASE/shared-tuner-backup"
+ if [ ! -f "$BASE/shared-tuner-backup/complete" ]; then
+  cp -p /data/local/tmp/libtsd.so /data/local/tmp/tsctl "$BASE/shared-tuner-backup/"
+  touch "$BASE/shared-tuner-backup/complete"
+ fi
+ cp "$STAGE/libtsd.so" /data/local/tmp/libtsd.apk-new.so
+ chmod 755 /data/local/tmp/libtsd.apk-new.so
+ chcon u:object_r:vendor_file:s0 /data/local/tmp/libtsd.apk-new.so
+ mv /data/local/tmp/libtsd.apk-new.so /data/local/tmp/libtsd.so
+ cp "$STAGE/tsctl" /data/local/tmp/tsctl.new
+ chmod 755 /data/local/tmp/tsctl.new
+ mv /data/local/tmp/tsctl.new /data/local/tmp/tsctl
+ echo '既存の接続キー・起動設定を保持し、配信本体を3波対応版へ更新しました。TV再起動後に有効になります'
 else
  sh "$STAGE/install.sh" "$STAGE"
  touch "$BASE/tuner-owned"

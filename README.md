@@ -1,5 +1,23 @@
 # TCLTV-Mirakurun
 
+## BS/110度CS対応プレリリース
+
+**v0.3.0-pre.1 では地デジ・BS・110度CSを同じ2チューナーから選局できます。**
+[プレリリースを入手](https://github.com/Long0823-1/TCLTV-Mirakurun/releases/tag/v0.3.0-pre.1)
+
+[2m3k/TCLTV-Bondriver-3wave](https://github.com/2m3k/TCLTV-Bondriver-3wave)
+の衛星選局処理を移植しています。既存の有線優先・DHCP/Windows直結・mDNS修正を維持しています。
+
+- TV本体でBS/CSを受信できるアンテナ・B-CASカードを用意し、TV本体でスキャンしてからアプリのセットアップを実行します。APK更新だけでは既存の局設定や配信本体は更新されません。
+- スキャン結果の `TYPE_ISDB_T` はGR、`TYPE_ISDB_S` のONID=4はBS、ONID=6/7はCSとして、物理多重ごとに設定を生成します。
+- `tuners.yml` は各チューナーに `[GR, BS, CS]` を設定します。配信コマンドへ渡す局指定は従来同様 `ONID_TSID_SID` です。
+- 既存BonDriver配信環境を利用している場合も、セットアップで接続キー・ネットワーク・起動設定を保持して共有の配信バイナリーを更新し、TV再起動後に適用します。更新前のバイナリーはTV内のroot専用バックアップへ保存します。
+- 未契約局の復号、4K/8K放送は対応範囲外です。Mirakurunの通常のEPG収集・チューナー割り当てを使用します。衛星EPGと同時視聴の動作は実受信環境での検証が必要です。
+- **当方にはBS/CSアンテナがないため、BS/CSの実受信と混在同時受信は未検証です。** 地デジの実機回帰試験と設定・選局処理の試験を行ったプレリリースです。
+
+[3波対応の構成・検証範囲](docs/THREE_WAVE.md)
+
+
 対応するTCL G06 Android TVの内蔵地デジ2チューナーを、TV本体で動く
 Mirakurunから利用するセットアップアプリです。PCにMirakurunを常駐させる必要はありません。
 

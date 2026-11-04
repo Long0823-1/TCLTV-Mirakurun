@@ -39,6 +39,14 @@ case "${1:-status}" in
   for proc in /proc/[0-9]*; do
    if [ -r "$proc/root/opt/mirakurun/node_modules/mirakurun/package.json" ] && grep -q '/usr/local/bin/tcl-tuner' "$proc/cmdline" 2>/dev/null; then kill "${proc##*/}" 2>/dev/null || true; fi
   done
+  # Wait for Mirakurun to finish its configuration/database saves before a
+  # setup or update replaces files. Otherwise the old server can overwrite
+  # freshly generated channels while exiting.
+  for attempt in $(seq 1 20); do
+   valid_pid || break
+   sleep 1
+  done
+  if valid_pid; then echo 'Mirakurunの停止が完了しません。設定の置換を中止しました'; exit 1; fi
   rm -f "$BASE/server.pid"
   echo 'Mirakurunを停止しました'
   ;;
