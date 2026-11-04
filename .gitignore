@@ -11,3 +11,10 @@ vendor/tcl/android/
 *.pass
 work/
 tests/.work/
+*.dll
+*.exe
+*.obj
+*.lib
+*.exp
+*.pdb
+vendor/tcl/native/tests/build-test.cmd

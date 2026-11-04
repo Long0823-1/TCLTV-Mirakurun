@@ -75,3 +75,4 @@ check(lib.tsd_pmt_pids(arr(toomany),len(toomany),1040,C.byref(service))!=0)
 longpmt=pmt(bytes([0x80,170])+bytes(170))
 reset(272);feed(packet(longpmt[:183],pid=272));feed(packet(longpmt[183:],pid=272,cc=1,start=False));check(seen==[longpmt])
 print(f'PSI parser: {checks} assertions passed')
+

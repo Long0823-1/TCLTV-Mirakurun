@@ -3,6 +3,6 @@
   command: /usr/bin/python3 /usr/local/bin/tcl-tuner 0 <channel>
   isDisabled: false
 - name: TCL-G06-1
-  types: [GR, BS, CS]
+  types: [GR, BS, CS, SKY]
   command: /usr/bin/python3 /usr/local/bin/tcl-tuner 1 <channel>
   isDisabled: false

@@ -10,14 +10,15 @@ final class ChannelCatalog {
   Channel(String n,String t,String c){name=n;type=t;channel=c;}
  }
  static List<Channel> parse(String rows)throws IOException {
-  Pattern pattern=Pattern.compile("original_network_id=(\\d+), transport_stream_id=(\\d+), service_id=(\\d+), type=(TYPE_ISDB_[TS]), service_type=(?:EN_TCL_DTV|SERVICE_TYPE_AUDIO_VIDEO), browsable=1, display_name=(.+)");
+  Pattern pattern=Pattern.compile("original_network_id=(\\d+), transport_stream_id=(\\d+), service_id=(\\d+), type=(TYPE_ISDB_[TSC]), service_type=(?:EN_TCL_DTV|SERVICE_TYPE_AUDIO_VIDEO), browsable=1, display_name=(.+)");
   List<Channel> result=new ArrayList<>();Set<String> seen=new HashSet<>();
   for(String row:rows.split("\\r?\\n")){
    Matcher m=pattern.matcher(row);if(!m.find())continue;
    int[] ids=new int[3];
    for(int i=0;i<3;i++){try{ids[i]=Integer.parseInt(m.group(i+1));}catch(NumberFormatException e){throw new IOException("invalid channel IDs",e);}if(ids[i]<1||ids[i]>65535)throw new IOException("invalid channel IDs");}
    String type="GR";
-   if(m.group(4).equals("TYPE_ISDB_S")){
+   if(m.group(4).equals("TYPE_ISDB_C")){type="SKY";} // CATVは内蔵チューナー1だけが受信できるため、専用種別でチューナー0へ割り当てない
+   else if(m.group(4).equals("TYPE_ISDB_S")){
     if(ids[0]==4)type="BS";else if(ids[0]==6||ids[0]==7)type="CS";else continue;
    }
    String key=type+":"+ids[0]+"_"+ids[1];if(!seen.add(key))continue;

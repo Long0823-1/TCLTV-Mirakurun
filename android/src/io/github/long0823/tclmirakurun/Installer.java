@@ -34,7 +34,7 @@ final class Installer {
             expected = reader.readLine().trim().split("\\s+")[0];
         }
         if (!actual.toString().equals(expected)) throw new IOException("runtime SHA-256 mismatch");
-        String rows = Root.capture("content query --uri content://android.media.tv/channel --projection original_network_id:transport_stream_id:service_id:type:service_type:browsable:display_name");
+        String rows = CatvCatalog.rows(CatvCatalog.read(Root::capture))+Root.capture("content query --uri content://android.media.tv/channel --projection original_network_id:transport_stream_id:service_id:type:service_type:browsable:display_name");
         JSONArray channels = new JSONArray();
         for (ChannelCatalog.Channel scanned : ChannelCatalog.parse(rows)) {
             JSONObject channel = new JSONObject();
@@ -52,6 +52,20 @@ final class Installer {
 
     private static void write(File path, String text) throws Exception {
         try(OutputStream out=new FileOutputStream(path)) { out.write(text.getBytes(StandardCharsets.UTF_8)); }
+    }
+
+    static String scanCatv(Context context)throws Exception {
+        boolean restart=Root.capture("if [ -f "+BASE+"/enabled ]; then echo yes; fi").trim().equals("yes");
+        command("stop");
+        try {
+            String result=CatvCatalog.scan(context,Root::capture);
+            String rows=CatvCatalog.rows(CatvCatalog.read(Root::capture))+Root.capture("content query --uri content://android.media.tv/channel --projection original_network_id:transport_stream_id:service_id:type:service_type:browsable:display_name");
+            JSONArray channels=new JSONArray();for(ChannelCatalog.Channel scanned:ChannelCatalog.parse(rows)){JSONObject channel=new JSONObject();channel.put("name",scanned.name);channel.put("type",scanned.type);channel.put("channel",scanned.channel);channel.put("isDisabled",false);channels.put(channel);}
+            File file=new File(context.getCacheDir(),"catv-mirakurun-channels.json");write(file,channels.toString(2));
+            String target=BASE+"/rootfs/usr/local/etc/mirakurun/channels.yml";
+            Root.capture("cp "+Root.quote(file.getAbsolutePath())+" "+target+".new && mv "+target+".new "+target);
+            return result+"\nMirakurunの局一覧を更新しました。";
+        }finally{if(restart){command("start");waitReady();}}
     }
 
     static String command(String action) throws Exception {
