@@ -17,7 +17,7 @@ final class ChannelCatalog {
    int[] ids=new int[3];
    for(int i=0;i<3;i++){try{ids[i]=Integer.parseInt(m.group(i+1));}catch(NumberFormatException e){throw new IOException("invalid channel IDs",e);}if(ids[i]<1||ids[i]>65535)throw new IOException("invalid channel IDs");}
    String type="GR";
-   if(m.group(4).equals("TYPE_ISDB_C")){type="SKY";} // CATVは内蔵チューナー1だけが受信できるため、専用種別でチューナー0へ割り当てない
+   if(m.group(4).equals("TYPE_ISDB_C")){type="SKY";} // CATVは地デジ・衛星とは別の種別SKYで登録する（受信できるのは両チューナーとも地デジ端子経由）
    else if(m.group(4).equals("TYPE_ISDB_S")){
     if(ids[0]==4)type="BS";else if(ids[0]==6||ids[0]==7)type="CS";else continue;
    }

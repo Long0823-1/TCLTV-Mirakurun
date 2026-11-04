@@ -54,20 +54,48 @@ final class Installer {
         try(OutputStream out=new FileOutputStream(path)) { out.write(text.getBytes(StandardCharsets.UTF_8)); }
     }
 
-    static String scanCatv(Context context)throws Exception {
+    /** Stops Mirakurun, scans the cable, updates the Mirakurun tuner/channel files and starts it again. */
+    static String scanCatv(Context context,java.util.function.Consumer<String> status)throws Exception {
         boolean restart=Root.capture("if [ -f "+BASE+"/enabled ]; then echo yes; fi").trim().equals("yes");
+        status.accept("【1/4】Mirakurunを停止しています…\nCATVのスキャンはチューナー1を専有するため、先に配信を止めます。");
         command("stop");
+        // Wait until Mirakurun and its tuner bridge are really gone.
+        for(int attempt=0;attempt<20&&!Root.capture("for p in /proc/[0-9]*; do if [ -r \"$p/root/opt/mirakurun/node_modules/mirakurun/package.json\" ]; then echo busy; break; fi; done").trim().isEmpty();attempt++)Thread.sleep(500);
         try {
-            String result=CatvCatalog.scan(context,Root::capture);
+            status.accept("【2/4】CATVをスキャンしています…\n開始を待っています（TV側の選局処理が終わるまで最大4分）。");
+            java.util.concurrent.atomic.AtomicBoolean scanning=new java.util.concurrent.atomic.AtomicBoolean(true);
+            long started=System.currentTimeMillis();
+            Thread poller=new Thread(()->{
+                while(scanning.get()){
+                    try{
+                        String[] p=Root.capture("cat /data/local/tmp/tsd_catv_progress 2>/dev/null").trim().split("\\s+");
+                        if(p.length==4){
+                            int done=Integer.parseInt(p[0]),total=Integer.parseInt(p[1]);long seconds=(System.currentTimeMillis()-started)/1000;
+                            int percent=total>0?done*100/total:0;
+                            String eta=done>3?"\n残り約"+Math.max(1,(int)Math.ceil((seconds*(total-done)/(double)done)/60))+"分":"";
+                            status.accept("【2/4】CATVをスキャンしています… "+percent+"%\n周波数 "+(Integer.parseInt(p[2])/1000.0)+" MHz（"+done+"/"+total+"）\nここまでに見つかった番組："+p[3]+"件\n経過 "+(seconds/60)+"分"+(seconds%60)+"秒"+eta+"\nTVの電源を切らないでください。");
+                        }
+                    }catch(Exception ignored){}
+                    try{Thread.sleep(3000);}catch(InterruptedException e){return;}
+                }
+            });
+            poller.setDaemon(true);poller.start();
+            String result;
+            try{result=CatvCatalog.scan(context,Root::capture);}finally{scanning.set(false);poller.interrupt();}
+            status.accept("【3/4】Mirakurunの局一覧を更新しています…\nスキャン結果："+result.trim());
+            // CATV channels are type SKY and only tuner 1 can receive them: keep the tuner definition in step.
+            File tuners=new File(context.getCacheDir(),"catv-tuners.yml");
+            try(InputStream input=context.getAssets().open("tuners.yml");OutputStream out=new FileOutputStream(tuners)){byte[] bytes=new byte[4096];int count;while((count=input.read(bytes))!=-1)out.write(bytes,0,count);}
+            String tunersTarget=BASE+"/rootfs/usr/local/etc/mirakurun/tuners.yml";
+            Root.capture("cp "+Root.quote(tuners.getAbsolutePath())+" "+tunersTarget+".new && chmod 600 "+tunersTarget+".new && mv "+tunersTarget+".new "+tunersTarget);
             String rows=CatvCatalog.rows(CatvCatalog.read(Root::capture))+Root.capture("content query --uri content://android.media.tv/channel --projection original_network_id:transport_stream_id:service_id:type:service_type:browsable:display_name");
             JSONArray channels=new JSONArray();for(ChannelCatalog.Channel scanned:ChannelCatalog.parse(rows)){JSONObject channel=new JSONObject();channel.put("name",scanned.name);channel.put("type",scanned.type);channel.put("channel",scanned.channel);channel.put("isDisabled",false);channels.put(channel);}
             File file=new File(context.getCacheDir(),"catv-mirakurun-channels.json");write(file,channels.toString(2));
             String target=BASE+"/rootfs/usr/local/etc/mirakurun/channels.yml";
             Root.capture("cp "+Root.quote(file.getAbsolutePath())+" "+target+".new && mv "+target+".new "+target);
-            return result+"\nMirakurunの局一覧を更新しました。";
-        }finally{if(restart){command("start");waitReady();}}
+            return result+"\nMirakurunの局一覧（"+channels.length()+"チャンネル）を更新しました。\n有料放送は契約がないと映像・音声が出ませんが、局一覧には表示されます。";
+        }finally{if(restart){status.accept("【4/4】Mirakurunを起動しています…");command("start");waitReady();}}
     }
-
     static String command(String action) throws Exception {
         if (!Arrays.asList("start","stop","status").contains(action)) throw new IllegalArgumentException();
         return Root.capture("sh " + BASE + "/control.sh " + action);

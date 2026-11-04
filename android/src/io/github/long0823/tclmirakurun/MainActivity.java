@@ -25,7 +25,7 @@ public final class MainActivity extends Activity {
         LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL); body.setPadding(48,24,48,24);
         scroll.addView(body); setContentView(scroll);
         TextView title=new TextView(this); title.setText("TCL TV Mirakurun 0.3.0-pre.3 / CATV"); title.setTextSize(28); body.addView(title);
-        TextView description=new TextView(this); description.setText("対応TCL G06・Android 11・Magisk向け\n地デジ・BS/110度CS / 2チューナー / ポート40772\nMirakurun本体のバージョンは「本体の更新」で確認できます。\n衛星の実受信は未検証のプレリリースです。\n初回はMagiskでrootを許可してください。導入中は電源を切らないでください。"); description.setTextSize(17); body.addView(description);
+        TextView description=new TextView(this); description.setText("対応TCL G06・Android 11・Magisk向け\n地デジ・BS/110度CS・CATV（J:COMなど、ISDB-C）/ 2チューナー / ポート40772\nCATVは同軸をTVの「地デジ端子」へ接続してください（BS/CS端子は非対応）。\nCATVの有料放送は契約とB-CASの条件で、映像が出ない局があります。\nMirakurun本体のバージョンは「本体の更新」で確認できます。\n衛星の実受信は未検証のプレリリースです。\n初回はMagiskでrootを許可してください。導入中は電源を切らないでください。"); description.setTextSize(17); body.addView(description);
         TextView addresses=new TextView(this);networkAddresses=addresses;addresses.setText(NetworkSettings.describe(this)); addresses.setTextSize(18); addresses.setTextColor(Color.rgb(100,210,255)); body.addView(addresses);
         Button network=new Button(this);network.setText("ネットワーク設定 / .local名・固定IP");buttons.add(network);body.addView(network);network.setOnClickListener(v->NetworkSettings.show(this));networkRefresh.postDelayed(refreshNetwork,5000);
         Button host=new Button(this);host.setText(".localの接続名だけ変更");buttons.add(host);body.addView(host);host.setOnClickListener(v->NetworkSettings.showName(this));
@@ -48,7 +48,7 @@ public final class MainActivity extends Activity {
             Installer.waitReady();
             return result+"\n"+urls();
         });
-        add(body,"CATVをスキャン・局更新（配信を一時停止）",()->Installer.scanCatv(this));
+        add(body,"3. CATVをスキャン・局更新（Mirakurunを自動で停止し、完了後に再開）",()->Installer.scanCatv(this,text->runOnUiThread(()->{if(!isFinishing())output.setText(text);})));
         add(body,"状態を確認",()->Installer.command("status"));
         add(body,"停止・自動起動を無効化",()-> {
             Root.capture("rm -f "+Installer.BASE+"/enabled");
@@ -87,7 +87,7 @@ public final class MainActivity extends Activity {
                 TclPolicy.configure(this,false);
                 return Installer.remove(this);
             })).show());
-        output=new TextView(this); output.setTextSize(16); output.setText("セットアップ完了後はTVを自動再起動し、Mirakurunを起動します。\n既存のBonDriver・IPTVとの同じチューナーの同時利用は避けてください。"); body.addView(output);
+        output=new TextView(this); output.setTextSize(16); output.setText("セットアップ完了後はTVを自動再起動し、Mirakurunを起動します。\nCATVを使う場合は、起動後に「3. CATVをスキャン・局更新」を実行してください（約5〜10分、進行状況を表示します）。\n既存のBonDriver・IPTVとの同じチューナーの同時利用は避けてください。"); body.addView(output);
         buttons.get(0).requestFocus();
     }
 
