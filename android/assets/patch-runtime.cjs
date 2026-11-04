@@ -2,7 +2,9 @@
 // Mirakurun 4.1.5 snapshots interface addresses at startup. Android can acquire
 // Wi-Fi after Magisk starts the server. Bind IPv4 once and keep upstream ACLs.
 const fs = require('node:fs');
-const path = '/opt/mirakurun/node_modules/mirakurun/lib/Mirakurun/Server.js';
+const prefix = process.env.TCL_RUNTIME_PREFIX || '/opt/mirakurun';
+if (!['/opt/mirakurun', '/opt/mirakurun.update-new'].includes(prefix)) throw new Error('Invalid runtime prefix');
+const path = prefix + '/node_modules/mirakurun/lib/Mirakurun/Server.js';
 const marker = '// TCLTV-Mirakurun: IPv4 wildcard binding';
 let source = fs.readFileSync(path, 'utf8');
 const binding = 'addresses.push(...systemIPv4s);';
@@ -18,7 +20,7 @@ console.log('Applied IPv4 listener compatibility patch; upstream IP/origin ACLs 
 
 // Permit only the exact mDNS names published by this application. Never trust
 // an arbitrary .local Origin, a remote IP, or request-controlled file paths.
-const systemPath = '/opt/mirakurun/node_modules/mirakurun/lib/Mirakurun/system.js';
+const systemPath = prefix + '/node_modules/mirakurun/lib/Mirakurun/system.js';
 let system = fs.readFileSync(systemPath, 'utf8');
 const hostMarker = '// TCLTV-Mirakurun: managed mDNS origins';
 if (!system.includes(hostMarker)) {

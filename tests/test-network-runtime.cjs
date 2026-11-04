@@ -4,7 +4,7 @@ const script=fs.readFileSync('android/assets/patch-runtime.cjs','utf8');
 const server='/opt/mirakurun/node_modules/mirakurun/lib/Mirakurun/Server.js',system='/opt/mirakurun/node_modules/mirakurun/lib/Mirakurun/system.js';
 const files=new Map([[server,'addresses.push(...systemIPv4s);\naddresses.push("127.0.0.1");'],[system,'"use strict";\nfunction isPermittedIPAddress(addr) { return addr === "127.0.0.1"; }\nfunction isPermittedHost(url) {const u=new URL(url);if (u.hostname === "localhost" || u.hostname === "existing") return true; return false;}']]);
 let hosts='["my-tv.local"]';const fake={readFileSync:(p)=>p==='/run/tcl/mdns-hosts.json'?hosts:files.get(p),existsSync:p=>files.has(p),copyFileSync:(a,b)=>files.set(b,files.get(a)),writeFileSync:(p,v)=>files.set(p,v)};
-vm.runInNewContext(script,{require:n=>{assert.equal(n,'node:fs');return fake;},console});const once=files.get(system);vm.runInNewContext(script,{require:()=>fake,console});assert.equal(files.get(system),once);
+vm.runInNewContext(script,{require:n=>{assert.equal(n,'node:fs');return fake;},console,process:{env:{}}});const once=files.get(system);vm.runInNewContext(script,{require:()=>fake,console,process:{env:{}}});assert.equal(files.get(system),once);
 let interfaces={eth0:[{family:'IPv4',internal:false,address:'192.168.250.2',netmask:'255.255.255.252'}]};
 const sandbox={require:n=>n==='node:os'?{networkInterfaces:()=>interfaces}:fake,URL};vm.runInNewContext(files.get(system),sandbox);
 assert(sandbox.isPermittedHost('http://my-tv.local:40772/'));for(const value of ['http://other.local:40772/','https://my-tv.local:40772/','http://my-tv.local:80/','http://my-tv.local.evil.example:40772/'])assert(!sandbox.isPermittedHost(value));
@@ -17,3 +17,9 @@ interfaces.eth0[0].netmask='255.255.255.0';assert(!sandbox.isPermittedIPAddress(
 interfaces.eth0[0].netmask='255.255.255.252';interfaces.eth0[0].address='8.8.8.2';assert(!sandbox.isPermittedIPAddress('8.8.8.1'));
 interfaces={wlan0:[{family:'IPv4',internal:false,address:'192.168.250.2',netmask:'255.255.255.252'}]};assert(!sandbox.isPermittedIPAddress('192.168.250.1'));
 console.log('ALL PASS dedicated Ethernet /30 peers, no public ranges, no neighboring networks, no Wi-Fi ACL bypass');
+const stageServer=server.replace('/opt/mirakurun/','/opt/mirakurun.update-new/'),stageSystem=system.replace('/opt/mirakurun/','/opt/mirakurun.update-new/');
+files.set(stageServer,files.get(server+'.tcl-original'));files.set(stageSystem,files.get(system+'.tcl-mdns-original'));
+vm.runInNewContext(script,{require:()=>fake,console,process:{env:{TCL_RUNTIME_PREFIX:'/opt/mirakurun.update-new'}}});
+assert(files.get(stageServer).includes('0.0.0.0'));assert(files.get(stageSystem).includes('dedicated Ethernet /30'));assert.equal(files.get(system),once);
+assert.throws(()=>vm.runInNewContext(script,{require:()=>fake,console,process:{env:{TCL_RUNTIME_PREFIX:'/etc'}}}));
+console.log('ALL PASS staged update patch, live package unchanged, invalid prefix rejected');

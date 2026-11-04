@@ -24,8 +24,8 @@ public final class MainActivity extends Activity {
         ScrollView scroll=new ScrollView(this);
         LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL); body.setPadding(48,24,48,24);
         scroll.addView(body); setContentView(scroll);
-        TextView title=new TextView(this); title.setText("TCL TV Mirakurun 0.3.0-pre.1"); title.setTextSize(28); body.addView(title);
-        TextView description=new TextView(this); description.setText("対応TCL G06・Android 11・Magisk向け\n地デジ・BS/110度CS / 2チューナー / Mirakurun 4.1.5 / ポート40772\n衛星の実受信は未検証のプレリリースです。\n初回はMagiskでrootを許可してください。導入中は電源を切らないでください。"); description.setTextSize(17); body.addView(description);
+        TextView title=new TextView(this); title.setText("TCL TV Mirakurun 0.3.0-pre.2"); title.setTextSize(28); body.addView(title);
+        TextView description=new TextView(this); description.setText("対応TCL G06・Android 11・Magisk向け\n地デジ・BS/110度CS / 2チューナー / ポート40772\nMirakurun本体のバージョンは「本体の更新」で確認できます。\n衛星の実受信は未検証のプレリリースです。\n初回はMagiskでrootを許可してください。導入中は電源を切らないでください。"); description.setTextSize(17); body.addView(description);
         TextView addresses=new TextView(this);networkAddresses=addresses;addresses.setText(NetworkSettings.describe(this)); addresses.setTextSize(18); addresses.setTextColor(Color.rgb(100,210,255)); body.addView(addresses);
         Button network=new Button(this);network.setText("ネットワーク設定 / .local名・固定IP");buttons.add(network);body.addView(network);network.setOnClickListener(v->NetworkSettings.show(this));networkRefresh.postDelayed(refreshNetwork,5000);
         Button host=new Button(this);host.setText(".localの接続名だけ変更");buttons.add(host);body.addView(host);host.setOnClickListener(v->NetworkSettings.showName(this));
@@ -58,6 +58,21 @@ public final class MainActivity extends Activity {
             return result;
         });
         add(body,"ログを表示",()->Root.capture("tail -n 60 "+Installer.BASE+"/server.log"));
+        Button coreUpdate=new Button(this);coreUpdate.setText("Mirakurun本体の更新を確認");buttons.add(coreUpdate);body.addView(coreUpdate);
+        coreUpdate.setOnClickListener(v->execute(coreUpdate,"Mirakurun本体と公式npmの更新情報を確認しています…",()->{
+            CoreUpdate.Info info=CoreUpdate.check(this);
+            runOnUiThread(()->{
+                if(isFinishing())return;
+                String note=!info.online?"更新情報を取得できません。インターネット接続を確認してください。前の本体がある場合はオフラインで戻せます。":info.newer()?(info.supported()?"新しい本体があります。TVのメモリーを確保するため、更新中は配信を停止します。視聴・録画中は適用しません。\n設定・番組DBをバックアップし、起動確認に失敗した場合は元へ戻します。更新中はTVの電源を切らないでください。":"このメジャーバージョンは未対応です。アプリの対応版をお待ちください。") : "本体は最新です。";
+                AlertDialog.Builder dialog=new AlertDialog.Builder(this).setTitle("Mirakurun本体の更新").setMessage(info.summary()+"\n\n"+note).setNegativeButton("閉じる",null);
+                if(info.newer()&&info.supported())dialog.setPositiveButton("本体を更新する",(d,w)->execute(coreUpdate,"Mirakurun本体を更新しています。更新中は配信を停止します。数分かかることがあります。TVの電源を切らないでください。",()->CoreUpdate.install(this,info)));
+                if(info.previous!=null)dialog.setNeutralButton("前の本体に戻す",(d,w)->new AlertDialog.Builder(this).setTitle("Mirakurun "+info.previous+" に戻しますか？").setMessage("本体と、前の本体に対応する設定・番組DBの保存状態へ戻します。視聴・録画中は実行できません。").setNegativeButton("キャンセル",null).setPositiveButton("戻す",(dd,ww)->execute(coreUpdate,"前のMirakurun本体と設定・番組DBへ戻しています…",()->CoreUpdate.rollback(this))).show());
+                dialog.show();
+            });
+            return info.summary();
+        }));
+        add(body,"Mirakurun本体・依存パッケージのライセンス",()->CoreUpdate.licenses());
+        add(body,"本体更新のログを表示",()->Root.capture("tail -n 100 "+Installer.BASE+"/core-update.log"));
         Button remove=new Button(this); remove.setText("環境を削除"); buttons.add(remove); body.addView(remove);
         remove.setOnClickListener(view->new AlertDialog.Builder(this)
             .setTitle("Mirakurun環境を削除しますか？")
@@ -81,8 +96,12 @@ public final class MainActivity extends Activity {
     }
 
     private void execute(Button selected,Operation op) {
+        execute(selected,"処理中です。初回セットアップは数分かかる場合があります。",op);
+    }
+
+    private void execute(Button selected,String message,Operation op) {
             for(Button item:buttons)item.setEnabled(false);
-            output.setText("処理中です。初回セットアップは数分かかる場合があります。");
+            output.setText(message);
             worker.execute(()-> {
                 String text;
                 try { text=op.run(); } catch(Exception e) { text="処理に失敗しました\n"+e.getMessage(); }

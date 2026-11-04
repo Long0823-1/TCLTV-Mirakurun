@@ -48,3 +48,10 @@ No precompiled fork binary is shipped: the native payload is built from the
 reviewed sources in this repository. Local changes centralize serialized route
 restoration, reject unsupported satellite IDs, fix an early-return allocation leak,
 keep terrestrial timeouts, and use Android logcat rather than an unbounded log file.
+
+The optional in-app core updater downloads the official `mirakurun` npm package
+(stable 4.x), checks npm integrity and Node engines, and retains all downloaded
+package LICENSE files and package-lock metadata. Dependency license identifiers
+are collected in `tcl-dependency-licenses.json` and displayed in the TV app.
+The tested optional update is Mirakurun 4.2.1; the bundled bootstrap remains 4.1.5.
+Lifecycle scripts are disabled during this optional installation.
