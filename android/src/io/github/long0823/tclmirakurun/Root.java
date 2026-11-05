@@ -7,10 +7,13 @@ import java.util.concurrent.*;
 final class Root {
     static String quote(String value) { return "'" + value.replace("'", "'\\''") + "'"; }
 
-    static String capture(String command) throws Exception {
+    static String capture(String command) throws Exception { return capture(command,10); }
+
+    /** @param minutes watchdog limit; a full CATV scan needs far more than the default 10 minutes. */
+    static String capture(String command,int minutes) throws Exception {
         Process process = new ProcessBuilder("su", "-c", command).redirectErrorStream(true).start();
         ScheduledExecutorService timer = Executors.newSingleThreadScheduledExecutor();
-        timer.schedule(process::destroy, 10, TimeUnit.MINUTES);
+        timer.schedule(process::destroy, minutes, TimeUnit.MINUTES);
         try {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             byte[] buffer = new byte[4096];

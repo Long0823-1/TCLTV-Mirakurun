@@ -49,6 +49,14 @@ public final class MainActivity extends Activity {
             return result+"\n"+urls();
         });
         add(body,"3. CATVをスキャン・局更新（Mirakurunを自動で停止し、完了後に再開）",()->Installer.scanCatv(this,text->runOnUiThread(()->{if(!isFinishing())output.setText(text);})));
+        Button satellite=new Button(this);buttons.add(satellite);body.addView(satellite);
+        Runnable refreshSatellite=()->satellite.setText("衛星（BS/CS）の局もCATVと併用する： "+(Installer.satelliteWithCatv(this)?"する":"しない（初期値）"));
+        refreshSatellite.run();
+        satellite.setOnClickListener(v->{
+            Installer.setSatelliteWithCatv(this,!Installer.satelliteWithCatv(this));refreshSatellite.run();
+            execute(satellite,"局一覧を更新しています…（Mirakurunを停止して数十秒で再開します）",()->Installer.refreshChannels(this)+"\n「しない」では、TV本体の衛星スキャンの局（アンテナがないと受信できず、CATV経由のBSと局番号が重なります）を除きます。実際のBS/CSアンテナも使う場合は「する」にしてください。");
+        });
+        add(body,"局一覧だけ更新（スキャンなし）",()->Installer.refreshChannels(this));
         add(body,"状態を確認",()->Installer.command("status"));
         add(body,"停止・自動起動を無効化",()-> {
             Root.capture("rm -f "+Installer.BASE+"/enabled");
