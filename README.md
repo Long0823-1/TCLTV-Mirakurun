@@ -100,7 +100,7 @@ BS/110度CSは実験対応です。衛星の実受信は未検証で、4K/8Kは�
 ログ: `/data/local/tcl-mirakurun/server.log`。
 Magiskフック: `/data/adb/service.d/99-tcl-mirakurun.sh`。
 
-既存のTV配信プロトコルをPython製の小さなブリッジでMirakurunのチューナーコマンドへ
+既存のTV配信プロトコルをC製の静的リンクバイナリ（`tcl-tuner`、`vendor/tcl/native/tcl_tuner.c`）のブリッジでMirakurunのチューナーコマンドへ
 接続します。TV内の通常の復号処理を使用し、Mirakurun側の追加デコーダーは設定しません。
 機器固有の接続キーはTV内だけに保存し、APKやリポジトリには含めません。
 

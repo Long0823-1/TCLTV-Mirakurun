@@ -13,6 +13,9 @@ $env:TMP="$build\temp";$env:TEMP="$build\temp"
 if($LASTEXITCODE -ne 0) {throw 'Native TV library build failed.'}
 & $clang --target=armv7a-linux-androideabi21 "--sysroot=$sysroot" -O2 -Wall -Wextra -Werror "$PSScriptRoot\tsctl.c" -o "$build\tsctl"
 if($LASTEXITCODE -ne 0) {throw 'Local TV control tool build failed.'}
+& $clang --target=armv7a-linux-androideabi21 "--sysroot=$sysroot" -static -O2 -Wall -Wextra -Werror "$PSScriptRoot\tcl_tuner.c" -o "$build\tcl-tuner"
+if($LASTEXITCODE -ne 0) {throw 'Tuner bridge build failed.'}
 Copy-Item -LiteralPath "$build\libtsd.so" -Destination "$assets\libtsd.so"
 Copy-Item -LiteralPath "$build\tsctl" -Destination "$assets\tsctl"
+Copy-Item -LiteralPath "$build\tcl-tuner" -Destination "$assets\tcl-tuner"
 Write-Output 'Native TV components built and copied into APK assets.'

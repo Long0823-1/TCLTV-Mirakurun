@@ -99,6 +99,10 @@ final class Installer {
     static int applyChannelConfig(Context context)throws Exception {
         File tuners=new File(context.getCacheDir(),"catv-tuners.yml");
         try(InputStream input=context.getAssets().open("tuners.yml");OutputStream out=new FileOutputStream(tuners)){byte[] bytes=new byte[4096];int n;while((n=input.read(bytes))!=-1)out.write(bytes,0,n);}
+        File bridge=new File(context.getCacheDir(),"catv-tcl-tuner");
+        try(InputStream input=context.getAssets().open("tcl-tuner");OutputStream out=new FileOutputStream(bridge)){byte[] bytes=new byte[65536];int n;while((n=input.read(bytes))!=-1)out.write(bytes,0,n);}
+        String bridgeTarget=BASE+"/rootfs/usr/local/bin/tcl-tuner";
+        Root.capture("cp "+Root.quote(bridge.getAbsolutePath())+" "+bridgeTarget+".new && chmod 755 "+bridgeTarget+".new && mv "+bridgeTarget+".new "+bridgeTarget);
         String tunersTarget=BASE+"/rootfs/usr/local/etc/mirakurun/tuners.yml";
         Root.capture("cp "+Root.quote(tuners.getAbsolutePath())+" "+tunersTarget+".new && chmod 600 "+tunersTarget+".new && mv "+tunersTarget+".new "+tunersTarget);
         String rows=CatvCatalog.rows(CatvCatalog.read(Root::capture))+Root.capture("content query --uri content://android.media.tv/channel --projection original_network_id:transport_stream_id:service_id:type:service_type:browsable:display_name");
