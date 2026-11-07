@@ -101,3 +101,11 @@ Windows PCから有線LANとWi-Fiの各TVアドレスへ接続して確認しま
 ```sh
 python tests/test-mdns-legacy.py --source <PCのWi-Fi IPv4> --tv-ip <TVのWi-Fi IPv4> --host <TVのWi-Fi広告名.local>
 ```
+
+## IPアドレス変更後の接続拒否修正（v0.3.0-pre.5、2026-11-07）
+
+- 現象：TVのネットワークが 192.168.1.0/24 から 192.168.0.0/24 へ変わった後、直IP・`.local` の両方で `wget: error getting response`（ブラウザーの `ERR_EMPTY_RESPONSE` 相当）を確認。
+- 原因：Mirakurunの `allowIPv4CidrRanges` は起動時に読む静的設定で、TV上の `server.yml` が特定 `/24` に限定されていたため、新しいサブネットからの接続を実行中プロセスが応答なしに切断していた。`control.sh` による再起動では回復することを確認。
+- 対策：`patch-runtime.cjs` に、接続のたびに現在のインターフェースのアドレス・ネットマスクと照合して同一サブネットのプライベート／リンクローカル接続だけを許可する動的ACLを追加。外部・別サブネット・ネットワーク／ブロードキャストアドレスは従来どおり拒否。
+- 検証：TV上で `server.yml` の許可範囲を旧サブネット（192.168.1.0/24）のままにして再起動し、新サブネット側アドレス `192.168.0.5:40772/api/status` が HTTP 200 を返すことを確認（修正前は空応答）。その後 `server.yml` を復元して再確認。
+- 回帰：`tests/test-network-runtime.cjs` にDHCP・ルーター変更相当のケース（/24、/16、/0拒否、公開アドレス拒否）を追加し全件パス。mDNSの `.local` 広告はIP変更へ自動追従する既存実装を維持。

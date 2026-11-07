@@ -6,7 +6,7 @@
   commit `b3826d414c0905a5e2d8e23c728fee21c6a26feb` (MIT).
   Its license is preserved in `vendor/tcl/LICENSE`. Changes here remove the
   hardcoded wired address and old APK dependency and use a separate backup directory.
-- [Mirakurun](https://github.com/Chinachu/Mirakurun) 4.1.5: Apache-2.0.
+- [Mirakurun](https://github.com/Chinachu/Mirakurun) 4.3.0: Apache-2.0.
   `android/assets/patch-runtime.cjs` modifies the IPv4 listener to accept
   addresses acquired after startup. Its existing IP and origin ACLs are retained.
 - Alpine Linux 3.22.7 ARMv7 runtime, Node.js 22, npm, Python 3 and npm
@@ -53,5 +53,5 @@ The optional in-app core updater downloads the official `mirakurun` npm package
 (stable 4.x), checks npm integrity and Node engines, and retains all downloaded
 package LICENSE files and package-lock metadata. Dependency license identifiers
 are collected in `tcl-dependency-licenses.json` and displayed in the TV app.
-The tested optional update is Mirakurun 4.2.1; the bundled bootstrap remains 4.1.5.
+The bundled bootstrap is Mirakurun 4.3.0; optional updates to 4.2.1 and 4.3.0 were tested on device.
 Lifecycle scripts are disabled during this optional installation.

@@ -24,11 +24,11 @@ public final class MainActivity extends Activity {
         ScrollView scroll=new ScrollView(this);
         LinearLayout body=new LinearLayout(this); body.setOrientation(LinearLayout.VERTICAL); body.setPadding(48,24,48,24);
         scroll.addView(body); setContentView(scroll);
-        TextView title=new TextView(this); title.setText("TCL TV Mirakurun 0.3.0-pre.3 / CATV"); title.setTextSize(28); body.addView(title);
-        TextView description=new TextView(this); description.setText("対応TCL G06・Android 11・Magisk向け\n地デジ・BS/110度CS・CATV（J:COMなど、ISDB-C）/ 2チューナー / ポート40772\nCATVは同軸をTVの「地デジ端子」へ接続してください（BS/CS端子は非対応）。\nCATVの有料放送は契約とB-CASの条件で、映像が出ない局があります。\nMirakurun本体のバージョンは「本体の更新」で確認できます。\n衛星の実受信は未検証のプレリリースです。\n初回はMagiskでrootを許可してください。導入中は電源を切らないでください。"); description.setTextSize(17); body.addView(description);
-        TextView addresses=new TextView(this);networkAddresses=addresses;addresses.setText(NetworkSettings.describe(this)); addresses.setTextSize(18); addresses.setTextColor(Color.rgb(100,210,255)); body.addView(addresses);
-        Button network=new Button(this);network.setText("ネットワーク設定 / .local名・固定IP");buttons.add(network);body.addView(network);network.setOnClickListener(v->NetworkSettings.show(this));networkRefresh.postDelayed(refreshNetwork,5000);
-        Button host=new Button(this);host.setText(".localの接続名だけ変更");buttons.add(host);body.addView(host);host.setOnClickListener(v->NetworkSettings.showName(this));
+        TextView title=new TextView(this); title.setText("TCL TV Mirakurun 0.3.0-pre.5 / CATV"); title.setTextSize(30); body.addView(title);
+        TextView description=new TextView(this); description.setText("対応TCL G06・Android 11・Magisk向け\n地デジ・BS/110度CS・CATV（J:COMなど、ISDB-C）/ 2チューナー / ポート40772\nCATVは同軸をTVの「地デジ端子」へ接続してください（BS/CS端子は非対応）。\nCATVの有料放送は契約とB-CASの条件で、映像が出ない局があります。\nMirakurun本体のバージョンは「本体の更新」で確認できます。\n衛星の実受信は未検証のプレリリースです。\n初回はMagiskでrootを許可してください。導入中は電源を切らないでください。"); description.setTextSize(18); body.addView(description);
+        TextView addresses=new TextView(this);networkAddresses=addresses;addresses.setText(NetworkSettings.describe(this)); addresses.setTextSize(20); addresses.setTextColor(Color.rgb(100,210,255)); body.addView(addresses);
+        Button network=button("ネットワーク設定 / .local名・固定IP");body.addView(network);network.setOnClickListener(v->NetworkSettings.show(this));networkRefresh.postDelayed(refreshNetwork,5000);
+        Button host=button(".localの接続名だけ変更");body.addView(host);host.setOnClickListener(v->NetworkSettings.showName(this));
         add(body,"1. セットアップ / 局更新（完了後に自動再起動）",()-> {
             String result=Installer.configure(this);
             TclPolicy.configure(this,true);
@@ -49,7 +49,7 @@ public final class MainActivity extends Activity {
             return result+"\n"+urls();
         });
         add(body,"3. CATVをスキャン・局更新（Mirakurunを自動で停止し、完了後に再開）",()->Installer.scanCatv(this,text->runOnUiThread(()->{if(!isFinishing())output.setText(text);})));
-        Button satellite=new Button(this);buttons.add(satellite);body.addView(satellite);
+        Button satellite=button("");body.addView(satellite);
         Runnable refreshSatellite=()->satellite.setText("衛星（BS/CS）の局もCATVと併用する： "+(Installer.satelliteWithCatv(this)?"する":"しない（初期値）"));
         refreshSatellite.run();
         satellite.setOnClickListener(v->{
@@ -67,7 +67,7 @@ public final class MainActivity extends Activity {
             return result;
         });
         add(body,"ログを表示",()->Root.capture("tail -n 60 "+Installer.BASE+"/server.log"));
-        Button coreUpdate=new Button(this);coreUpdate.setText("Mirakurun本体の更新を確認");buttons.add(coreUpdate);body.addView(coreUpdate);
+        Button coreUpdate=button("Mirakurun本体の更新を確認");body.addView(coreUpdate);
         coreUpdate.setOnClickListener(v->execute(coreUpdate,"Mirakurun本体と公式npmの更新情報を確認しています…",()->{
             CoreUpdate.Info info=CoreUpdate.check(this);
             runOnUiThread(()->{
@@ -82,7 +82,7 @@ public final class MainActivity extends Activity {
         }));
         add(body,"Mirakurun本体・依存パッケージのライセンス",()->CoreUpdate.licenses());
         add(body,"本体更新のログを表示",()->Root.capture("tail -n 100 "+Installer.BASE+"/core-update.log"));
-        Button remove=new Button(this); remove.setText("環境を削除"); buttons.add(remove); body.addView(remove);
+        Button remove=button("環境を削除"); body.addView(remove);
         remove.setOnClickListener(view->new AlertDialog.Builder(this)
             .setTitle("Mirakurun環境を削除しますか？")
             .setMessage("Mirakurun本体・局設定・番組DB・ログ・自動起動を削除します。既存のBonDriver環境は保持します。このアプリが導入したチューナー設定は復元します。アプリ自体は残ります。")
@@ -95,12 +95,21 @@ public final class MainActivity extends Activity {
                 TclPolicy.configure(this,false);
                 return Installer.remove(this);
             })).show());
-        output=new TextView(this); output.setTextSize(16); output.setText("セットアップ完了後はTVを自動再起動し、Mirakurunを起動します。\nCATVを使う場合は、起動後に「3. CATVをスキャン・局更新」を実行してください（約5〜10分、進行状況を表示します）。\n既存のBonDriver・IPTVとの同じチューナーの同時利用は避けてください。"); body.addView(output);
+        output=new TextView(this); output.setTextSize(17); output.setText("セットアップ完了後はTVを自動再起動し、Mirakurunを起動します。\nCATVを使う場合は、起動後に「3. CATVをスキャン・局更新」を実行してください（約5〜10分、進行状況を表示します）。\n既存のBonDriver・IPTVとの同じチューナーの同時利用は避けてください。"); body.addView(output);
         buttons.get(0).requestFocus();
     }
 
+    private Button button(String label) {
+        Button item=new Button(this); item.setText(label); buttons.add(item);
+        float density=getResources().getDisplayMetrics().density;
+        item.setTextSize(20); item.setMinHeight((int)(64*density+0.5f)); item.setPadding((int)(24*density+0.5f),0,(int)(24*density+0.5f),0);
+        item.setTextColor(Color.WHITE); item.setBackgroundColor(Color.rgb(52,58,64));
+        item.setOnFocusChangeListener((view,focus)->((Button)view).setBackgroundColor(focus?Color.rgb(35,110,200):Color.rgb(52,58,64)));
+        return item;
+    }
+
     private void add(LinearLayout body,String label,Operation op) {
-        Button button=new Button(this); button.setText(label); buttons.add(button); body.addView(button);
+        Button button=button(label); body.addView(button);
         button.setOnClickListener(view->execute(button,op));
     }
 

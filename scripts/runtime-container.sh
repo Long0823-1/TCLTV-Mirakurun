@@ -1,7 +1,7 @@
 #!/bin/sh
 set -eu
 apk add --no-cache nodejs npm python3
-npm --prefix /opt/mirakurun install mirakurun@4.1.5 --omit=dev --no-audit --no-fund
+npm --prefix /opt/mirakurun install mirakurun@4.3.0 --omit=dev --no-audit --no-fund
 cp /src/runtime/crc32-fallback.cjs /opt/mirakurun/node_modules/@node-rs/crc32/index.js
 node - <<'JS'
 const assert = require('node:assert/strict');

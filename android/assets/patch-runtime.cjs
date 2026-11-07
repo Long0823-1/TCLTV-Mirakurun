@@ -74,3 +74,39 @@ function isManagedDirectAddress(addr) {
     fs.writeFileSync(systemPath, system);
 }
 console.log('Applied exact private Ethernet /30 allowance; all other client IP ACLs retained');
+
+// Permit clients on the same subnet as a currently live interface. DHCP or a
+// router change must not lock out LAN clients until the server is restarted.
+system = fs.readFileSync(systemPath, 'utf8');
+const subnetMarker = '// TCLTV-Mirakurun: live subnet allowance';
+if (!system.includes(subnetMarker)) {
+    const entry = 'function isPermittedIPAddress(addr) {';
+    const directCheck = 'if (isManagedDirectAddress(addr)) return true;';
+    if (!system.includes(entry)) throw new Error('Unsupported Mirakurun IP validation implementation');
+    const helper = `${subnetMarker}
+function isManagedLocalAddress(addr) {
+    if (typeof addr !== "string" || !/^(?:[0-9]{1,3}\\.){3}[0-9]{1,3}$/.test(addr)) return false;
+    const target = addr.split(".").map(Number);
+    if (!target.every(n => n >= 0 && n <= 255)) return false;
+    const lan = target[0] === 10 || (target[0] === 172 && target[1] >= 16 && target[1] <= 31) ||
+        (target[0] === 192 && target[1] === 168) || (target[0] === 169 && target[1] === 254);
+    if (!lan) return false;
+    try {
+        const links = require("node:os").networkInterfaces();
+        return Object.keys(links).some(name => (links[name] || []).some(link => {
+            if (link.family !== "IPv4" || link.internal) return false;
+            const own = String(link.address).split(".").map(Number), mask = String(link.netmask).split(".").map(Number);
+            if (own.length !== 4 || mask.length !== 4 || mask[0] !== 255 || mask.some(n => n < 0 || n > 255)) return false;
+            if (!target.every((n, i) => (n & mask[i]) === (own[i] & mask[i]))) return false;
+            const host = target.map((n, i) => n & (255 ^ mask[i])), wild = mask.map(n => 255 ^ n);
+            return !host.every(n => n === 0) && !host.every((n, i) => n === wild[i]);
+        }));
+    } catch (_) { return false; }
+}
+`;
+    if (!fs.existsSync(systemPath + '.tcl-subnet-original')) fs.copyFileSync(systemPath, systemPath + '.tcl-subnet-original');
+    const check = system.includes(directCheck) ? directCheck : entry;
+    system = '"use strict";\n' + helper + system.replace(check, check + '\n    if (isManagedLocalAddress(addr)) return true;');
+    fs.writeFileSync(systemPath, system);
+}
+console.log('Applied live subnet allowance; public and off-subnet clients remain blocked');
