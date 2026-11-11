@@ -191,3 +191,9 @@ Apache-2.0ライセンスです。自作部分はMIT。
 開発・保守活動をKo-fiで支援できます。
 
 [Ko-fiで支援する](https://ko-fi.com/long0823)
+
+## 関連記事
+
+ブログ「knowledge-storage.info」で関連する解説記事を公開しています。
+
+- [TCL 32S5400でMirakurunを動かす｜内蔵地デジ・CATV・BS/CS チューナーをTVだけで配信する導入手順](https://knowledge-storage.info/2026/10/28/tcl-32s5400-mirakurun/)
